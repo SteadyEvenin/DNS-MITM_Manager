@@ -27,13 +27,16 @@ jobs:
           apt-get update
           apt-get install -y --no-install-recommends git zip ca-certificates
 
+      # Builds the exact libultrahand commit pinned in this repo.
       - name: Checkout (with submodules)
         uses: actions/checkout@v4
         with:
           submodules: recursive
 
-      - name: Mark workspace as safe for git
-        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+      - name: Show libultrahand commit being built
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git -C libs/libultrahand log -1 --oneline
 
       - name: Build with Makefile
         run: |
