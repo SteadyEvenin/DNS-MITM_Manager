@@ -42,9 +42,9 @@ APP_VERSION :=	0.2.0+
 
 TARGET		:=	$(notdir $(CURDIR))
 BUILD		:=	build
-SOURCES		:=	source libs/libultrahand/libultra/source
+SOURCES		:=	source libs/libultrahand/common libs/libultrahand/libultra/source libs/libultrahand/libtesla/source
 DATA		:=	data
-INCLUDES	:=	include libs/libultrahand/libultra/include libs/libultrahand/libtesla/include
+INCLUDES	:=	include libs/libultrahand/common libs/libultrahand/libultra/include libs/libultrahand/libtesla/include
 
 NO_ICON		:=  1
 
@@ -68,12 +68,14 @@ CFLAGS += -DUI_OVERRIDE_PATH="\"$(UI_OVERRIDE_PATH)\""
 
 
 
-CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions  -fno-unwind-tables -fno-asynchronous-unwind-tables -std=c++20
+CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions  -fno-unwind-tables -fno-asynchronous-unwind-tables -std=c++26 -Wno-dangling-else
 
 ASFLAGS	:=	-g $(ARCH)
 LDFLAGS	=	-specs=$(DEVKITPRO)/libnx/switch.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map)
+LDFLAGS	+=	-Wl,--as-needed -Wl,--gc-sections
 
-LIBS	:= -lnx
+# Required by current libultrahand (libminizip is only needed for unzip/download features)
+LIBS	:= -lcurl -lz -lminizip -lmbedtls -lmbedx509 -lmbedcrypto -lnx
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing
