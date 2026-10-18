@@ -1,17 +1,26 @@
-# DNS-MITM Manager
+# DNS-MITM Manager (fork)
 
-A simple Tesla Overlay to request atmosphere to reload the `hosts` file, and to toggle on/off `hosts` file entries.
+Tesla overlay for Atmosphere's DNS MITM. Lets you toggle entries in the `hosts` files under `/atmosphere/hosts` and reloads them when the overlay is closed. Usage and file format are documented upstream: [ppkantorski/DNS-MITM_Manager](https://github.com/ppkantorski/DNS-MITM_Manager).
 
-All lines starting with `#` are treated as section Headers.
+## Why this fork exists
 
-If the line starts with a digit, it is expected to be an IP address and toggleable.
+This fork publishes a built overlay, kept current against libultrahand, so it can be dropped on an SD card or pulled by a pack builder script.
 
-Toggling is performed by prepending or removing a `;`.
+The overlay source is not modified.
 
-All other lines are simply ignored.
+## What differs from upstream
 
-Hosts files are reloaded in DNS MITM each time the overlay is hidden. 
+- CI builds the overlay with the Makefile and publishes a release.
+- `libs/libultrahand` is a submodule. A daily job moves it to upstream's latest commit and cuts a release if it changed.
+- The Makefile is adjusted for current libultrahand.
+- devkitPro ships no minizip for the Switch, so CI builds it from zlib's source.
 
-See Atmosphere [docs here](https://github.com/Atmosphere-NX/Atmosphere/blob/master/docs/features/dns_mitm.md) for details on the function of DNS MITM.
+Release tags: `v*` for manual, `build-<date>-<libultrahand commit>` for automatic.
 
-See Tesla components [here](https://github.com/WerWolv/Tesla-Menu) and [here](https://github.com/WerWolv/nx-ovlloader) for installing Tesla.
+## Build
+
+devkitPro (devkitA64, libnx), `switch-curl`, `switch-zlib`, `switch-mbedtls`, Switch minizip. Clone with `--recurse-submodules`, run `make`.
+
+## Credits
+
+[znxDomain](https://github.com/znxDomain/DNS-MITM_Manager) (original), [ppkantorski](https://github.com/ppkantorski) (libultrahand rebuild, [libultrahand](https://github.com/ppkantorski/libultrahand)), [WerWolv](https://github.com/WerWolv) (Tesla).
