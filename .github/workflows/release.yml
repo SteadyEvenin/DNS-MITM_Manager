@@ -27,12 +27,39 @@ jobs:
           apt-get update
           apt-get install -y --no-install-recommends git zip ca-certificates
 
-      # Updates devkitA64/libnx to the newest release and installs the
-      # portlibs current libultrahand links against (curl, zlib, minizip, mbedtls).
-      - name: Update devkitPro and install libraries
+      # Current libultrahand links against curl, zlib, minizip and mbedtls.
+      # Checks what the image already has (no network needed) and only goes
+      # to pkg.devkitpro.org for packages that are missing, with retries.
+      - name: Ensure devkitPro libraries
         run: |
-          dkp-pacman -Syu --noconfirm --needed \
-            switch-curl switch-zlib switch-minizip switch-mbedtls
+          PKGS="switch-curl switch-zlib switch-minizip switch-mbedtls"
+
+          echo "Status of required packages in the image:"
+          for p in $PKGS; do
+            if dkp-pacman -Q "$p" 2>/dev/null; then :; else echo "$p: MISSING"; fi
+          done
+
+          MISSING=""
+          for p in $PKGS; do
+            dkp-pacman -Q "$p" >/dev/null 2>&1 || MISSING="$MISSING $p"
+          done
+
+          if [ -z "$MISSING" ]; then
+            echo "All required libraries already present; skipping network install."
+            exit 0
+          fi
+
+          echo "Installing:$MISSING"
+          for i in 1 2 3 4 5; do
+            if dkp-pacman -Sy --noconfirm --needed $MISSING; then
+              exit 0
+            fi
+            echo "Attempt $i failed, retrying in 30s..."
+            sleep 30
+          done
+
+          echo "::error::Could not install:$MISSING (pkg.devkitpro.org refused or was unreachable from this runner)"
+          exit 1
 
       # Builds the exact libultrahand commit pinned in this repo.
       - name: Checkout (with submodules)
