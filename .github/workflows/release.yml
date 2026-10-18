@@ -27,12 +27,12 @@ jobs:
           apt-get update
           apt-get install -y --no-install-recommends git zip ca-certificates
 
-      # Current libultrahand links against curl, zlib, minizip and mbedtls.
+      # Current libultrahand links against curl, zlib and mbedtls from devkitPro.
       # Checks what the image already has (no network needed) and only goes
       # to pkg.devkitpro.org for packages that are missing, with retries.
       - name: Ensure devkitPro libraries
         run: |
-          PKGS="switch-curl switch-zlib switch-minizip switch-mbedtls"
+          PKGS="switch-curl switch-zlib switch-mbedtls"
 
           echo "Status of required packages in the image:"
           for p in $PKGS; do
@@ -60,6 +60,39 @@ jobs:
 
           echo "::error::Could not install:$MISSING (pkg.devkitpro.org refused or was unreachable from this runner)"
           exit 1
+
+      # devkitPro does not publish a switch-minizip package, but libultrahand's
+      # download_funcs.hpp includes <minizip/unzip.h>. This builds the classic
+      # minizip that ships inside zlib's source tree and installs it next to the
+      # other Switch portlibs.
+      - name: Build minizip for Switch
+        run: |
+          set -e
+          PREFIX="$DEVKITPRO/portlibs/switch"
+
+          if [ -f "$PREFIX/lib/libminizip.a" ] && [ -f "$PREFIX/include/minizip/unzip.h" ]; then
+            echo "minizip already present; skipping."
+            exit 0
+          fi
+
+          WORK="$(mktemp -d)"
+          git clone --depth 1 --branch v1.3.1 https://github.com/madler/zlib.git "$WORK/zlib"
+          SRC="$WORK/zlib/contrib/minizip"
+
+          for f in ioapi unzip; do
+            aarch64-none-elf-gcc -c -O2 -ffunction-sections -fdata-sections \
+              -march=armv8-a+crc+crypto -mtune=cortex-a57 -mtp=soft -fPIE \
+              -D__SWITCH__ -DUSE_FILE32API \
+              -I"$PREFIX/include" \
+              "$SRC/$f.c" -o "$WORK/$f.o"
+          done
+
+          mkdir -p "$PREFIX/lib" "$PREFIX/include/minizip"
+          aarch64-none-elf-ar rcs "$PREFIX/lib/libminizip.a" "$WORK/ioapi.o" "$WORK/unzip.o"
+          cp "$SRC/ioapi.h" "$SRC/unzip.h" "$SRC/crypt.h" "$PREFIX/include/minizip/"
+
+          echo "Installed:"
+          ls -l "$PREFIX/lib/libminizip.a" "$PREFIX/include/minizip/"
 
       # Builds the exact libultrahand commit pinned in this repo.
       - name: Checkout (with submodules)
