@@ -23,4 +23,4 @@ devkitPro (devkitA64, libnx), `switch-curl`, `switch-zlib`, `switch-mbedtls`, Sw
 
 ## Credits
 
-[znxDomain](https://github.com/znxDomain/DNS-MITM_Manager) (original), [ppkantorski](https://github.com/ppkantorski) (libultrahand rebuild, [libultrahand](https://github.com/ppkantorski/libultrahand)), [WerWolv](https://github.com/WerWolv) (Tesla).
+[znxDomain](https://github.com/znxDomain/DNS-MITM_Manager) (original), [ppkantorski](https://github.com/ppkantorski) (libultrahand, [libultrahand](https://github.com/ppkantorski/libultrahand)), [WerWolv](https://github.com/WerWolv) (Tesla).
