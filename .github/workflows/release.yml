@@ -27,16 +27,26 @@ jobs:
           apt-get update
           apt-get install -y --no-install-recommends git zip ca-certificates
 
+      # Updates devkitA64/libnx to the newest release and installs the
+      # portlibs current libultrahand links against (curl, zlib, minizip, mbedtls).
+      - name: Update devkitPro and install libraries
+        run: |
+          dkp-pacman -Syu --noconfirm --needed \
+            switch-curl switch-zlib switch-minizip switch-mbedtls
+
       # Builds the exact libultrahand commit pinned in this repo.
       - name: Checkout (with submodules)
         uses: actions/checkout@v4
         with:
           submodules: recursive
 
-      - name: Show libultrahand commit being built
+      - name: Show versions being built
         run: |
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          echo "libultrahand:"
           git -C libs/libultrahand log -1 --oneline
+          echo "compiler:"
+          aarch64-none-elf-g++ --version | head -1
 
       - name: Build with Makefile
         run: |
