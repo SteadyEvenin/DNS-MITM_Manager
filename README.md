@@ -1,10 +1,10 @@
 # DNS-MITM Manager (fork)
 
-Tesla overlay for Atmosphere's DNS MITM. Lets you toggle entries in the `hosts` files under `/atmosphere/hosts` and reloads them when the overlay is closed. Usage and file format are documented upstream: [ppkantorski/DNS-MITM_Manager](https://github.com/ppkantorski/DNS-MITM_Manager).
+Ultrahand (Tesla fork) overlay for Atmosphere's DNS MITM. Lets you toggle entries in the `hosts` files under `/atmosphere/hosts` and reloads them when the overlay is closed. Usage and file format are documented upstream: [ppkantorski/DNS-MITM_Manager](https://github.com/ppkantorski/DNS-MITM_Manager).
 
 ## Why this fork exists
 
-This fork publishes a built overlay, kept current against libultrahand, so it can be dropped on an SD card or pulled by a pack builder script.
+This fork publishes a built overlay, kept current against libultrahand.
 
 The overlay source is not modified.
 
