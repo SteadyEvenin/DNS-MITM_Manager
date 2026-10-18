@@ -1,0 +1,56 @@
+name: Sync libultrahand
+
+# Checks upstream libultrahand once a day. If it has a newer commit, this moves
+# the pinned submodule commit in this repo, commits that change to master, and
+# starts a release build. Nothing happens when upstream has not changed.
+
+on:
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Bump libultrahand if upstream changed
+        id: bump
+        run: |
+          git submodule update --init --remote libs/libultrahand
+
+          if [ -z "$(git status --porcelain libs/libultrahand)" ]; then
+            echo "libultrahand already up to date."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          SHORT="$(git -C libs/libultrahand rev-parse --short HEAD)"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add libs/libultrahand
+          git commit -m "Update libultrahand submodule to ${SHORT}"
+          git push
+
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+          echo "short=${SHORT}" >> "$GITHUB_OUTPUT"
+
+      # Pushes made with the built-in token do not start other workflows,
+      # so the release build is started explicitly.
+      - name: Start release build
+        if: steps.bump.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="build-$(date -u +%Y%m%d)-${{ steps.bump.outputs.short }}"
+          gh workflow run release.yml --ref "${{ github.event.repository.default_branch }}" -f tag="$TAG"
+          echo "Started release.yml with tag $TAG"
