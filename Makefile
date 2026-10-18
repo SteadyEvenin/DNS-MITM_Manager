@@ -74,8 +74,8 @@ ASFLAGS	:=	-g $(ARCH)
 LDFLAGS	=	-specs=$(DEVKITPRO)/libnx/switch.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map)
 LDFLAGS	+=	-Wl,--as-needed -Wl,--gc-sections
 
-# Required by current libultrahand (libminizip is only needed for unzip/download features)
-LIBS	:= -lcurl -lz -lminizip -lmbedtls -lmbedx509 -lmbedcrypto -lnx
+# Required by current libultrahand (minizip must come before z for static linking)
+LIBS	:= -lcurl -lminizip -lz -lmbedtls -lmbedx509 -lmbedcrypto -lnx
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing
